@@ -1,43 +1,46 @@
-const db = require('../db'); // Importa el objeto de base de datos
+const AuditoriaPrestamos = require('../models/auditoriaPrestamosModel');
 
-// Obtener todos los registros de auditoría de préstamos
-exports.getAuditoriaPrestamos = (req, res) => {
-    db.query('SELECT * FROM AuditoriaPrestamos', (err, results) => {
-        if (err) {
-            console.error('Error al obtener auditoría de préstamos:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
-            return;
-        }
-        res.json(results); // Enviar resultados como JSON
-    });
-};
+function getAuditoriaPrestamos(req, res) {
+  AuditoriaPrestamos.getAllAuditoriaPrestamos((err, auditoriaPrestamos) => {
+    if (err) {
+      console.error('Error al obtener la auditoría de préstamos:', err);
+      res.status(500).json({ error: 'Error interno del servidor' });
+      return;
+    }
+    res.json(auditoriaPrestamos);
+  });
+}
 
-// Obtener un registro de auditoría de préstamo por ID
-exports.getAuditoriaPrestamoById = (req, res) => {
-    const id = req.params.id;
-    db.query('SELECT * FROM AuditoriaPrestamos WHERE id_auditoria = ?', id, (err, results) => {
-        if (err) {
-            console.error('Error al obtener auditoría de préstamo por ID:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
-            return;
-        }
-        if (results.length === 0) {
-            res.status(404).json({ error: 'Auditoría de préstamo no encontrada' });
-            return;
-        }
-        res.json(results[0]); // Enviar el primer resultado encontrado
-    });
-};
+function getAuditoriaPrestamoById(req, res) {
+  const id_auditoria = req.params.id;
+  AuditoriaPrestamos.getAuditoriaPrestamoById(id_auditoria, (err, auditoriaPrestamo) => {
+    if (err) {
+      console.error('Error al obtener la auditoría de préstamo:', err);
+      res.status(500).json({ error: 'Error interno del servidor' });
+      return;
+    }
+    if (!auditoriaPrestamo) {
+      res.status(404).json({ error: 'Auditoría de préstamo no encontrada' });
+      return;
+    }
+    res.json(auditoriaPrestamo);
+  });
+}
 
-// Crear un nuevo registro de auditoría de préstamo
-exports.createAuditoriaPrestamo = (req, res) => {
-    const { id_prestamo, accion } = req.body;
-    db.query('INSERT INTO AuditoriaPrestamos (id_prestamo, accion) VALUES (?, ?)', [id_prestamo, accion], (err, result) => {
-        if (err) {
-            console.error('Error al crear auditoría de préstamo:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
-            return;
-        }
-        res.status(201).json({ message: 'Auditoría de préstamo creada exitosamente', id: result.insertId });
-    });
+function createAuditoriaPrestamo(req, res) {
+  const { id_prestamo, accion } = req.body;
+  AuditoriaPrestamos.createAuditoriaPrestamo(id_prestamo, accion, (err, resultado) => {
+    if (err) {
+      console.error('Error al crear la auditoría de préstamo:', err);
+      res.status(500).json({ error: 'Error interno del servidor' });
+      return;
+    }
+    res.status(201).json({ message: 'Auditoría de préstamo creada exitosamente', id_auditoria: resultado.insertId });
+  });
+}
+
+module.exports = {
+  getAuditoriaPrestamos,
+  getAuditoriaPrestamoById,
+  createAuditoriaPrestamo
 };
