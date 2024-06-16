@@ -1,22 +1,73 @@
+// models/auditoriaPrestamosModel.js
+
 const db = require('../db');
 
-const AuditoriaPrestamos = {
-  getAllAuditoriaPrestamos: function(callback) {
-    db.query('SELECT * FROM AuditoriaPrestamos', callback);
-  },
+// Obtener todas las auditorías de préstamos
+function getAllAuditoriaPrestamos(callback) {
+    const sql = 'SELECT * FROM AuditoriaPrestamos';
+    db.query(sql, (err, result) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        callback(null, result);
+    });
+}
 
-  getAuditoriaPrestamoById: function(id, callback) {
-    db.query('SELECT * FROM AuditoriaPrestamos WHERE id_auditoria = ?', [id], callback);
-  },
+// Obtener una auditoría de préstamo por su ID
+function getAuditoriaPrestamoById(id, callback) {
+    const sql = 'SELECT * FROM AuditoriaPrestamos WHERE id_auditoria = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        callback(null, result[0]); // Tomamos el primer resultado porque esperamos solo un resultado
+    });
+}
 
-  createAuditoriaPrestamo: function(id_prestamo, accion, callback) {
-    const auditoria = {
-      id_prestamo: id_prestamo,
-      accion: accion,
-      fecha: new Date()
-    };
-    db.query('INSERT INTO AuditoriaPrestamos SET ?', auditoria, callback);
-  }
+// Crear una nueva auditoría de préstamo
+function createAuditoriaPrestamo(auditoria, callback) {
+    const { id_prestamo, accion } = auditoria;
+    const sql = 'INSERT INTO AuditoriaPrestamos (id_prestamo, accion) VALUES (?, ?)';
+    db.query(sql, [id_prestamo, accion], (err, result) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        callback(null, result);
+    });
+}
+
+// Actualizar una auditoría de préstamo por su ID
+function updateAuditoriaPrestamo(id, auditoria, callback) {
+    const { id_prestamo, accion } = auditoria;
+    const sql = 'UPDATE AuditoriaPrestamos SET id_prestamo = ?, accion = ? WHERE id_auditoria = ?';
+    db.query(sql, [id_prestamo, accion, id], (err, result) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        callback(null, result);
+    });
+}
+
+// Eliminar una auditoría de préstamo por su ID
+function deleteAuditoriaPrestamo(id, callback) {
+    const sql = 'DELETE FROM AuditoriaPrestamos WHERE id_auditoria = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        callback(null, result);
+    });
+}
+
+module.exports = {
+    getAllAuditoriaPrestamos,
+    getAuditoriaPrestamoById,
+    createAuditoriaPrestamo,
+    updateAuditoriaPrestamo,
+    deleteAuditoriaPrestamo
 };
-
-module.exports = AuditoriaPrestamos;

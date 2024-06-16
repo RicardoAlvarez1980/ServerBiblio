@@ -1,13 +1,11 @@
-// routes/prestamosRoutes.js
 const express = require('express');
-const router = express.Router();
 const prestamosController = require('../controllers/prestamosController');
+const router = express.Router();
 
-// Rutas para préstamos
-router.get('/', prestamosController.getPrestamos);
-router.get('/:id', prestamosController.getPrestamoById);
+router.get('/', prestamosController.getAllPrestamos);
+router.get('/:id_prestamo', prestamosController.getPrestamoById);
 router.post('/', prestamosController.createPrestamo);
-router.put('/:id', prestamosController.updatePrestamo);
-router.delete('/:id', prestamosController.deletePrestamo);
+router.put('/:id_prestamo', prestamosController.updatePrestamo);
+router.delete('/:id_prestamo', prestamosController.deletePrestamo);
 
 module.exports = router;

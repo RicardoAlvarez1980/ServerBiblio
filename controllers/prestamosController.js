@@ -1,29 +1,24 @@
-// controllers/prestamosController.js
-const Prestamos = require('../models/prestamosModel');
+const prestamosModel = require('../models/prestamosModel');
 
-// Controladores de préstamos
-
-function getPrestamos(req, res) {
-    Prestamos.getAllPrestamos((err, prestamos) => {
+function getAllPrestamos(req, res) {
+    prestamosModel.getAllPrestamos((err, results) => {
         if (err) {
-            console.error('Error al obtener los préstamos:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
-        res.json(prestamos);
+        res.json(results);
     });
 }
 
 function getPrestamoById(req, res) {
-    const id_prestamo = req.params.id;
-    Prestamos.getPrestamoById(id_prestamo, (err, prestamo) => {
+    const id_prestamo = req.params.id_prestamo;
+    prestamosModel.getPrestamoById(id_prestamo, (err, prestamo) => {
         if (err) {
-            console.error('Error al obtener el préstamo:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
         if (!prestamo) {
-            res.status(404).json({ error: 'Préstamo no encontrado' });
+            res.status(404).json({ message: 'Préstamo no encontrado' });
             return;
         }
         res.json(prestamo);
@@ -31,52 +26,50 @@ function getPrestamoById(req, res) {
 }
 
 function createPrestamo(req, res) {
-    const nuevoPrestamo = req.body;
-    Prestamos.createPrestamo(nuevoPrestamo, (err, resultado) => {
+    const { id_libro, id_usuario } = req.body;
+    if (!id_libro || !id_usuario) {
+        res.status(400).json({ message: 'Faltan datos: id_libro y id_usuario son requeridos' });
+        return;
+    }
+
+    prestamosModel.createPrestamo({ id_libro, id_usuario }, (err, result) => {
         if (err) {
-            console.error('Error al crear el préstamo:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            if (err.sqlState === '45000') {
+                res.status(400).json({ error: err.message }); // Error customizado desde el procedimiento almacenado
+            } else {
+                res.status(500).json({ error: err.message });
+            }
             return;
         }
-        res.status(201).json({ message: 'Préstamo creado exitosamente', id_prestamo: resultado.insertId });
+        res.status(201).json({ message: 'Préstamo creado exitosamente' });
     });
 }
 
 function updatePrestamo(req, res) {
-    const id_prestamo = req.params.id;
+    const id_prestamo = req.params.id_prestamo;
     const prestamoData = req.body;
-    Prestamos.updatePrestamo(id_prestamo, prestamoData, (err, resultado) => {
+    prestamosModel.updatePrestamo(id_prestamo, prestamoData, (err) => {
         if (err) {
-            console.error('Error al actualizar el préstamo:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
-        if (resultado.affectedRows === 0) {
-            res.status(404).json({ error: 'Préstamo no encontrado' });
-            return;
-        }
-        res.json({ message: 'Préstamo actualizado exitosamente' });
+        res.json({ message: 'Préstamo actualizado' });
     });
 }
 
 function deletePrestamo(req, res) {
-    const id_prestamo = req.params.id;
-    Prestamos.deletePrestamo(id_prestamo, (err, resultado) => {
+    const id_prestamo = req.params.id_prestamo;
+    prestamosModel.deletePrestamo(id_prestamo, (err) => {
         if (err) {
-            console.error('Error al eliminar el préstamo:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
-        if (resultado.affectedRows === 0) {
-            res.status(404).json({ error: 'Préstamo no encontrado' });
-            return;
-        }
-        res.json({ message: 'Préstamo eliminado exitosamente' });
+        res.json({ message: 'Préstamo eliminado' });
     });
 }
 
 module.exports = {
-    getPrestamos,
+    getAllPrestamos,
     getPrestamoById,
     createPrestamo,
     updatePrestamo,

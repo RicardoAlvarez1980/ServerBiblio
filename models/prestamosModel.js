@@ -1,7 +1,6 @@
-// models/prestamosModel.js
 const db = require('../db');
 
-// Funciones del modelo de préstamos
+// Funciones del modelo de prestamos
 
 function getAllPrestamos(callback) {
     db.query('SELECT * FROM Prestamos', callback);
@@ -22,7 +21,9 @@ function getPrestamoById(id_prestamo, callback) {
 }
 
 function createPrestamo(prestamoData, callback) {
-    db.query('INSERT INTO Prestamos SET ?', prestamoData, callback);
+    const { id_libro, id_usuario } = prestamoData;
+    const query = 'CALL registrar_prestamo(?, ?, CURDATE())';
+    db.query(query, [id_libro, id_usuario], callback);
 }
 
 function updatePrestamo(id_prestamo, prestamoData, callback) {

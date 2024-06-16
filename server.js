@@ -13,6 +13,7 @@ const usuariosRoutes = require('./routes/usuariosRoutes.js');
 const prestamosRoutes = require('./routes/prestamosRoutes.js');
 const auditoriaPrestamosRoutes = require('./routes/auditoriaPrestamosRoutes.js');
 const bibliotecarioRoutes = require('./routes/bibliotecarioRoutes'); 
+const autoresRoutes = require('./routes/autoresRoutes');
 
 
 // Rutas para libros
@@ -29,6 +30,9 @@ app.use('/auditoria-prestamos', auditoriaPrestamosRoutes);
 
 // Rutas para bibliotecarios
 app.use('/bibliotecarios', bibliotecarioRoutes); 
+
+// Rutas para autores
+app.use('/autores', autoresRoutes); 
 
 // Puerto de escucha
 const PORT = process.env.PORT || 3001;
