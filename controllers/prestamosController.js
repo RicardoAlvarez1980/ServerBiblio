@@ -1,15 +1,16 @@
 const prestamosModel = require('../models/prestamosModel');
 
-function getAllPrestamos(req, res) {
-    prestamosModel.getAllPrestamos((err, results) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(results);
-    });
+// Obtener todos los préstamos
+async function getAllPrestamos(req, res) {
+    try {
+        const prestamos = await prestamosModel.getAllPrestamos();
+        res.json(prestamos);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 }
 
+// Obtener préstamo por ID
 function getPrestamoById(req, res) {
     const id_prestamo = req.params.id_prestamo;
     prestamosModel.getPrestamoById(id_prestamo, (err, prestamo) => {
@@ -25,17 +26,35 @@ function getPrestamoById(req, res) {
     });
 }
 
+// Obtener préstamos devueltos o no devueltos
+function getPrestamosByEstado(req, res) {
+    const devuelto = req.query.devuelto;
+
+    if (devuelto === undefined || devuelto === '') {
+        return res.status(400).json({ message: 'Parámetro devuelto es requerido y debe ser true o false' });
+    }
+
+    prestamosModel.getPrestamosByEstado(devuelto === 'true', (err, prestamos) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(prestamos);
+    });
+}
+
+// Crear préstamo
 function createPrestamo(req, res) {
     const { id_libro, id_usuario } = req.body;
+
     if (!id_libro || !id_usuario) {
-        res.status(400).json({ message: 'Faltan datos: id_libro y id_usuario son requeridos' });
-        return;
+        return res.status(400).json({ message: 'Faltan datos: id_libro y id_usuario son requeridos' });
     }
 
     prestamosModel.createPrestamo({ id_libro, id_usuario }, (err, result) => {
         if (err) {
             if (err.sqlState === '45000') {
-                res.status(400).json({ error: err.message }); // Error customizado desde el procedimiento almacenado
+                res.status(400).json({ error: err.message }); // Error personalizado desde el procedimiento almacenado
             } else {
                 res.status(500).json({ error: err.message });
             }
@@ -45,9 +64,11 @@ function createPrestamo(req, res) {
     });
 }
 
+// Actualizar préstamo
 function updatePrestamo(req, res) {
     const id_prestamo = req.params.id_prestamo;
     const prestamoData = req.body;
+
     prestamosModel.updatePrestamo(id_prestamo, prestamoData, (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
@@ -57,8 +78,10 @@ function updatePrestamo(req, res) {
     });
 }
 
+// Eliminar préstamo
 function deletePrestamo(req, res) {
     const id_prestamo = req.params.id_prestamo;
+
     prestamosModel.deletePrestamo(id_prestamo, (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
@@ -71,6 +94,7 @@ function deletePrestamo(req, res) {
 module.exports = {
     getAllPrestamos,
     getPrestamoById,
+    getPrestamosByEstado,
     createPrestamo,
     updatePrestamo,
     deletePrestamo

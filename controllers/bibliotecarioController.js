@@ -1,47 +1,68 @@
-// controllers/bibliotecarioController.js
+const bibliotecarioModel = require('../models/bibliotecarioModel');
 
-const Bibliotecario = require('../models/bibliotecarioModel');
-
-// Obtener todos los bibliotecarios
-exports.getAllBibliotecarios = (req, res) => {
-    Bibliotecario.getAllBibliotecarios((err, bibliotecarios) => {
+function getAllBibliotecarios(req, res) {
+    bibliotecarioModel.getAllBibliotecarios((err, results) => {
         if (err) {
-            console.error('Error al obtener bibliotecarios:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
-        res.json(bibliotecarios);
+        res.json(results);
     });
-};
+}
 
-// Obtener un bibliotecario por ID
-exports.getBibliotecarioById = (req, res) => {
-    const id = req.params.id;
-    Bibliotecario.getBibliotecarioById(id, (err, bibliotecario) => {
+function getBibliotecarioById(req, res) {
+    const id_bibliotecario = req.params.id_bibliotecario;
+    bibliotecarioModel.getBibliotecarioById(id_bibliotecario, (err, bibliotecario) => {
         if (err) {
-            console.error('Error al obtener bibliotecario por ID:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
         if (!bibliotecario) {
-            res.status(404).json({ error: 'Bibliotecario no encontrado' });
+            res.status(404).json({ message: 'Bibliotecario no encontrado' });
             return;
         }
         res.json(bibliotecario);
     });
-};
+}
 
-// Crear un nuevo bibliotecario
-exports.createBibliotecario = (req, res) => {
-    const { nombre, telefono, email } = req.body;
-    const newBibliotecario = { nombre, telefono, email };
-
-    Bibliotecario.createBibliotecario(newBibliotecario, (err, result) => {
+function createBibliotecario(req, res) {
+    const bibliotecarioData = req.body;
+    bibliotecarioModel.createBibliotecario(bibliotecarioData, (err, result) => {
         if (err) {
-            console.error('Error al crear bibliotecario:', err);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: err.message });
             return;
         }
-        res.status(201).json({ message: 'Bibliotecario creado exitosamente', id: result.insertId });
+        res.status(201).json({ message: 'Bibliotecario creado exitosamente' });
     });
+}
+
+function updateBibliotecario(req, res) {
+    const id_bibliotecario = req.params.id_bibliotecario;
+    const bibliotecarioData = req.body;
+    bibliotecarioModel.updateBibliotecario(id_bibliotecario, bibliotecarioData, (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Bibliotecario actualizado' });
+    });
+}
+
+function deleteBibliotecario(req, res) {
+    const id_bibliotecario = req.params.id_bibliotecario;
+    bibliotecarioModel.deleteBibliotecario(id_bibliotecario, (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Bibliotecario eliminado' });
+    });
+}
+
+module.exports = {
+    getAllBibliotecarios,
+    getBibliotecarioById,
+    createBibliotecario,
+    updateBibliotecario,
+    deleteBibliotecario
 };
