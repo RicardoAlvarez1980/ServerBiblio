@@ -72,3 +72,5 @@ INSERT INTO Usuarios (id_usuario, nombre, email) VALUES
 -- Inserciones para la tabla Prestamos
 CALL registrar_prestamo(p_id_libro, p_id_usuario, p_fecha_prestamo);
 
+-- Inserciones para la tabla Prestamos (Devoluciones)
+CALL registrar_devolucion(p_id_prestamo);
