@@ -1,100 +1,83 @@
-const prestamosModel = require('../models/prestamosModel');
+// controllers/prestamosController.js
 
-// Obtener todos los préstamos
-async function getAllPrestamos(req, res) {
-    try {
-        const prestamos = await prestamosModel.getAllPrestamos();
+const Prestamo = require('../models/prestamosModel');
+const db = require('../db');
+
+// Controladores de prestamos
+
+function getAllPrestamos(req, res) {
+    Prestamo.getAllPrestamos((err, prestamos) => {
+        if (err) {
+            console.error('Error al obtener los préstamos: ', err);
+            return res.status(500).send('Error al obtener los préstamos');
+        }
         res.json(prestamos);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    });
 }
 
-// Obtener préstamo por ID
 function getPrestamoById(req, res) {
-    const id_prestamo = req.params.id_prestamo;
-    prestamosModel.getPrestamoById(id_prestamo, (err, prestamo) => {
+    const { id } = req.params;
+    Prestamo.getPrestamoById(id, (err, prestamo) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            console.error('Error al obtener el préstamo: ', err);
+            return res.status(500).send('Error al obtener el préstamo');
         }
         if (!prestamo) {
-            res.status(404).json({ message: 'Préstamo no encontrado' });
-            return;
+            return res.status(404).send('Préstamo no encontrado');
         }
         res.json(prestamo);
     });
 }
 
-// Obtener préstamos devueltos o no devueltos
-function getPrestamosByEstado(req, res) {
-    const devuelto = req.query.devuelto;
-
-    if (devuelto === undefined || devuelto === '') {
-        return res.status(400).json({ message: 'Parámetro devuelto es requerido y debe ser true o false' });
-    }
-
-    prestamosModel.getPrestamosByEstado(devuelto === 'true', (err, prestamos) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(prestamos);
-    });
-}
-
-// Crear préstamo
 function createPrestamo(req, res) {
     const { id_libro, id_usuario } = req.body;
+    const fecha_prestamo = new Date().toISOString().slice(0, 10); // Obtén la fecha actual en formato YYYY-MM-DD
+    
+    // Llama al procedimiento almacenado registrar_prestamo con la fecha actual del sistema
+    const query = 'CALL registrar_prestamo(?, ?, ?)';
+    const params = [id_libro, id_usuario, fecha_prestamo];
 
-    if (!id_libro || !id_usuario) {
-        return res.status(400).json({ message: 'Faltan datos: id_libro y id_usuario son requeridos' });
-    }
-
-    prestamosModel.createPrestamo({ id_libro, id_usuario }, (err, result) => {
-        if (err) {
-            if (err.sqlState === '45000') {
-                res.status(400).json({ error: err.message }); // Error personalizado desde el procedimiento almacenado
-            } else {
-                res.status(500).json({ error: err.message });
-            }
-            return;
+    db.query(query, params, (error, results) => {
+        if (error) {
+            console.error('Error al crear el préstamo: ', error);
+            return res.status(500).send('Error al crear el préstamo');
         }
-        res.status(201).json({ message: 'Préstamo creado exitosamente' });
+        
+        if (results && results.length > 0) {
+            const mensaje = results[0][0].mensaje; // El nombre del campo puede variar según el procedimiento almacenado
+            res.status(201).send(mensaje);
+        } else {
+            res.status(500).send('Error al crear el préstamo: no se recibió respuesta válida del procedimiento almacenado');
+        }
     });
 }
 
-// Actualizar préstamo
 function updatePrestamo(req, res) {
-    const id_prestamo = req.params.id_prestamo;
+    const { id } = req.params;
     const prestamoData = req.body;
-
-    prestamosModel.updatePrestamo(id_prestamo, prestamoData, (err) => {
+    Prestamo.updatePrestamo(id, prestamoData, (err, result) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            console.error('Error al actualizar el préstamo: ', err);
+            return res.status(500).send('Error al actualizar el préstamo');
         }
-        res.json({ message: 'Préstamo actualizado' });
+        res.status(200).send('Préstamo actualizado correctamente');
     });
 }
 
-// Eliminar préstamo
 function deletePrestamo(req, res) {
-    const id_prestamo = req.params.id_prestamo;
-
-    prestamosModel.deletePrestamo(id_prestamo, (err) => {
+    const { id } = req.params;
+    Prestamo.deletePrestamo(id, (err, result) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            console.error('Error al eliminar el préstamo: ', err);
+            return res.status(500).send('Error al eliminar el préstamo');
         }
-        res.json({ message: 'Préstamo eliminado' });
+        res.status(200).send('Préstamo eliminado correctamente');
     });
 }
 
 module.exports = {
     getAllPrestamos,
     getPrestamoById,
-    getPrestamosByEstado,
     createPrestamo,
     updatePrestamo,
     deletePrestamo
