@@ -68,9 +68,3 @@ INSERT INTO Usuarios (id_usuario, nombre, email) VALUES
 (8, 'Valentina Gómez', 'valentinagomez@example.com'),
 (9, 'Santiago González', 'santiagogonzalez@example.com'),
 (10, 'Julieta Torres', 'julietatorres@example.com');
-
--- Inserciones para la tabla Prestamos
-CALL registrar_prestamo(p_id_libro, p_id_usuario, p_fecha_prestamo);
-
--- Inserciones para la tabla Prestamos (Devoluciones)
-CALL registrar_devolucion(p_id_prestamo);

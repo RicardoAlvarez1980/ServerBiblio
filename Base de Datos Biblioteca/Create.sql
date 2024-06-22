@@ -15,7 +15,7 @@ CREATE TABLE Libros (
     id_libro INT PRIMARY KEY AUTO_INCREMENT,
     titulo VARCHAR(255) NOT NULL,
     id_autor INT,
-    estado ENUM('disponible', 'prestado', 'en reparación') DEFAULT 'disponible',
+    estado ENUM('disponible', 'prestado') DEFAULT 'disponible',
     FOREIGN KEY (id_autor) REFERENCES Autores(id_autor)
 );
 
